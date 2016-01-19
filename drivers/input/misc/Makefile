@@ -66,3 +66,5 @@ obj-$(CONFIG_AVAGO_APDS990X)            += apds990x.o
 obj-$(CONFIG_INPUT_ISL29028)            += isl29028.o
 obj-$(CONFIG_INPUT_LIS3DH)              += lis3dh.o
 obj-$(CONFIG_INPUT_LTR558_D9)		+= ltr558_d9.o
+obj-$(CONFIG_INPUT_LTR558_I6)		+= ltr558_i6.o
+obj-y                  			+= yamaha/
