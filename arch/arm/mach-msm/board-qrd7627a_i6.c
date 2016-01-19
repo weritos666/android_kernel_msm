@@ -970,9 +970,10 @@ static void __init msm7627a_init_regulators(void)
 				__func__, rc);
 }
 /*start by lf 2012.12.26 for button-backlight*/
+/*OFF_button-backlight*/
 #if defined(CONFIG_LEDS_GPIO) || defined(CONFIG_LEDS_GPIO_MODULE)
 #if 1//def D9_BOARD_MBV2P0_BSP
-#define I6_LED_GPIO_KEYBOARD  82
+//#define I6_LED_GPIO_KEYBOARD  82
 #else
 #define I6_LED_GPIO_KEYBOARD  49
 #endif

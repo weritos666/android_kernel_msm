@@ -23,7 +23,7 @@ obj-$(CONFIG_CPU_FREQ_GOV_INTELLIDEMAND)	+= cpufreq_intellidemand.o
 obj-$(CONFIG_CPU_FREQ_GOV_SMARTASSH3)  	+= cpufreq_smartassH3.o
 obj-$(CONFIG_CPU_FREQ_GOV_SMARTMAX)		+= cpufreq_smartmax.o
 obj-$(CONFIG_CPU_FREQ_GOV_WHEATLEY)		+= cpufreq_wheatley.o
-
+obj-$(CONFIG_CPU_FREQ_GOV_INTERACTIVEX2)    	+= cpufreq_interactivex2.o
 
 # CPUfreq cross-arch helpers
 obj-$(CONFIG_CPU_FREQ_TABLE)		+= freq_table.o
