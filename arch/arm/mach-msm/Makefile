@@ -38,6 +38,7 @@ obj-$(CONFIG_ARCH_MSM_SCORPION) += msm_fault_handlers.o
 endif
 
 obj-$(CONFIG_MSM_VIC) += irq-vic.o
+obj-$(CONFIG_MSM_EVENT_TIMER)		+= event_timer.o
 
 ifdef CONFIG_ARCH_QSD8X50
 	obj-$(CONFIG_MSM_SOC_REV_NONE) += acpuclock-8x50.o
