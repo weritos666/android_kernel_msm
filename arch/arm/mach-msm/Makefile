@@ -39,6 +39,7 @@ endif
 
 obj-$(CONFIG_MSM_VIC) += irq-vic.o
 obj-$(CONFIG_MSM_EVENT_TIMER)		+= event_timer.o
+obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 
 ifdef CONFIG_ARCH_QSD8X50
 	obj-$(CONFIG_MSM_SOC_REV_NONE) += acpuclock-8x50.o

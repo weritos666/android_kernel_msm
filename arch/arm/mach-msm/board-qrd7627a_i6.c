@@ -66,6 +66,10 @@
 #include "board-msm7627a.h"
 #include "board-msm7627a_i6-sensor.h"
 
+#ifdef CONFIG_TS_FT5306
+#include <linux/ft5306_ts.h>
+#endif
+
 #define RESERVE_KERNEL_EBI1_SIZE	0x3A000
 #define MSM_RESERVE_AUDIO_SIZE	0xF0000
 #define BOOTLOADER_BASE_ADDR    0x10000
@@ -192,6 +196,73 @@ static int msm_ion_camera_size_carving;
 #define CAMERA_HEAP_TYPE	ION_HEAP_TYPE_DMA
 #else
 #define CAMERA_HEAP_TYPE	ION_HEAP_TYPE_CARVEOUT
+#endif
+
+#ifdef CONFIG_TS_FT5306
+
+#define FT5306_I2C_NAME "ft5306_ts"
+#define FT5306_GPIO_IRQ 48
+#define FT5306_GPIO_RST 26
+#define FT5306_I2C_ADDR 0x38
+
+#define MAX_TOUCH_NUM 10
+
+static int ft5306_ts_gpio_init(void)
+{
+	int ret;
+	ret = gpio_request(FT5306_GPIO_IRQ, "ft5306 IRQ GPIO");
+	if (ret) {
+		printk(KERN_ERR "%s Failed to request GPIO %d\n",
+				__func__, FT5306_GPIO_IRQ);
+		return ret;
+	}
+
+	gpio_tlmm_config(GPIO_CFG(FT5306_GPIO_IRQ, 0, GPIO_CFG_INPUT, GPIO_CFG_NO_PULL, GPIO_CFG_6MA),GPIO_CFG_ENABLE);
+
+	return 0;
+}
+
+static int ft5306_ts_platform_init(void)
+{
+	int ret;
+	ret = gpio_request(FT5306_GPIO_RST, "ft5306 RST GPIO");
+	if (ret) {
+		printk(KERN_ERR "%s Failed to request GPIO %d\n",
+				__func__, FT5306_GPIO_RST);
+		return ret;
+	}
+
+	gpio_tlmm_config(GPIO_CFG(FT5306_GPIO_RST, 0, GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP, GPIO_CFG_8MA),GPIO_CFG_ENABLE);
+	gpio_set_value(FT5306_GPIO_RST, 1);
+
+	return 0;
+}
+
+static int ft5306_ts_platform_exit(void)
+{
+	return 0;
+}
+
+static struct ft5306_platform_data ft5306_ts_pdata = {
+	.name = FT5306_I2C_NAME,
+	.numtouch = MAX_TOUCH_NUM,
+	.display_minx = 0,
+	.display_maxx = 540,
+	.display_miny = 0,
+	.display_maxy = 960,
+	.irq_gpio = FT5306_GPIO_IRQ,
+	.init_platform_hw = ft5306_ts_platform_init,
+	.exit_platform_hw = ft5306_ts_platform_exit,
+	.init_gpio = ft5306_ts_gpio_init,
+};
+
+static struct i2c_board_info ft5306_i2c_device[] = {
+	{
+		I2C_BOARD_INFO(FT5306_I2C_NAME, FT5306_I2C_ADDR),
+		.platform_data = &ft5306_ts_pdata,
+	},
+};
+
 #endif
 
 static struct android_usb_platform_data android_usb_pdata = {
@@ -896,14 +967,12 @@ static void __init msm7627a_init_regulators(void)
 }
 /*start by lf 2012.12.26 for button-backlight*/
 #if defined(CONFIG_LEDS_GPIO) || defined(CONFIG_LEDS_GPIO_MODULE)
-#if 1//def D9_BOARD_MBV2P0_BSP
-#define D9_LED_GPIO_KEYBOARD  49
-#else
-#define D9_LED_GPIO_KEYBOARD  82
-#endif
+
+#define I6_LED_GPIO_KEYBOARD  49
+
 static struct gpio_led gpio_leds[] = {
 	[0] = {
-		.gpio			= D9_LED_GPIO_KEYBOARD,
+		.gpio			= I6_LED_GPIO_KEYBOARD,
 		.name			= "button-backlight",
 		.default_trigger	= "none",
 		.active_low		= 0,
@@ -926,7 +995,7 @@ static struct platform_device led_device = {
 static void __init keyboard_leds_init(void)
 {
 	int rc;
-		rc = gpio_tlmm_config(GPIO_CFG(D9_LED_GPIO_KEYBOARD, 0,
+		rc = gpio_tlmm_config(GPIO_CFG(I6_LED_GPIO_KEYBOARD, 0,
 				GPIO_CFG_OUTPUT, GPIO_CFG_PULL_UP,
 				GPIO_CFG_2MA), GPIO_CFG_ENABLE);
 		if (rc < 0) {
@@ -1061,6 +1130,10 @@ static void __init msm_qrd_init(void)
 
 #if defined(CONFIG_BT) && defined(CONFIG_MARIMBA_CORE)
 	msm7627a_bt_power_init();
+#endif
+#ifdef CONFIG_TS_FT5306
+	i2c_register_board_info(1,
+			ft5306_i2c_device, ARRAY_SIZE(ft5306_i2c_device));
 #endif
 	msm7627a_sensor_init();
 	msm7627a_camera_init();

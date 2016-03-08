@@ -148,7 +148,6 @@ static struct platform_device msm_fb_device = {
 		.platform_data = &msm_fb_pdata,
 	}
 };
-
 #if 0
 #ifdef CONFIG_MSM_V4L2_VIDEO_OVERLAY_DEVICE
 static struct platform_device msm_v4l2_video_overlay_device = {

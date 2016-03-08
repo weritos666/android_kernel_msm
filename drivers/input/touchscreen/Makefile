@@ -84,3 +84,4 @@ obj-$(CONFIG_TOUCHSCREEN_CYTTSP_I2C_QC)       += cyttsp-i2c-qc.o
 obj-$(CONFIG_TOUCHSCREEN_HIMAX)			+= himax_ts.o
 #add by hjl for i6 Elan Touch Screen
 obj-$(CONFIG_TOUCHSCREEN_ELAN_KTF2K)			+= ektf2k.o
+obj-$(CONFIG_TS_FT5306)       += ft5306_ts.o

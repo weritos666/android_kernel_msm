@@ -39,10 +39,6 @@
 #define MACHINE_IS_JSR_I6Q  \
  (machine_is_msm8625_skud())
 
-#ifdef CONFIG_LEDS_TRICOLOR_FLAHSLIGHT
-#undef CONFIG_LEDS_TRICOLOR_FLAHSLIGHT
-#endif
-
 
  
 static int tp_id = 0;
@@ -98,13 +94,10 @@ static unsigned int kp_row_gpios_8625[] = {31};
 static unsigned int kp_col_gpios_8625[] = {36, 37};
 
 static const unsigned short keymap_8625[] = {
-	KEY_VOLUMEUP,
-	KEY_VOLUMEDOWN,
-};
-
-static const unsigned short keymap_8625_qrd5[] = {
-	KEY_VOLUMEDOWN,
-	KEY_VOLUMEUP,
+    KEY_VOLUMEUP,    
+    KEY_VOLUMEDOWN,
+      
+	
 };
 
 static struct gpio_event_matrix_info kp_matrix_info_8625 = {
@@ -397,7 +390,30 @@ static struct platform_device msm_device_tricolor_leds = {
 };
 #endif
 
-/*
+#if 0
+static struct pmic8029_led_platform_data leds_data[] = {
+	{
+		.name = "button-backlight",
+		.which = PM_MPP_7,
+		.type = PMIC8029_DRV_TYPE_CUR,
+		.max.cur = PM_MPP__I_SINK__LEVEL_40mA,
+	},
+};
+
+static struct pmic8029_leds_platform_data pmic8029_leds_pdata = {
+	.leds = leds_data,
+	.num_leds = 1,
+};
+
+static struct platform_device pmic_mpp_leds_pdev = {
+	.name   = "pmic-mpp-leds",
+	.id     = -1,
+	.dev    = {
+		.platform_data	= &pmic8029_leds_pdata,
+	},
+};
+#endif
+#if 0
 static struct led_info tricolor_led_info[] = {
 	[0] = {
 		.name           = "red",
@@ -406,6 +422,10 @@ static struct led_info tricolor_led_info[] = {
 	[1] = {
 		.name           = "green",
 		.flags          = LED_COLOR_GREEN,
+	},
+	[2] = {
+		.name           = "blue",
+		.flags          = LED_COLOR_BLUE,
 	},
 };
 
@@ -421,8 +441,8 @@ static struct platform_device tricolor_leds_pdev = {
 		.platform_data  = &tricolor_led_pdata,
 	},
 };
-*/
 
+#endif
 void __init msm7627a_add_io_devices(void)
 {
 	return;
@@ -457,11 +477,11 @@ void __init qrd7627a_add_io_devices(void)
 #ifdef CONFIG_MSM_RPC_VIBRATOR
 	msm_init_pmic_vibrator();
 #endif
-
+#if 0
 	/* keypad */
 	if (machine_is_msm8625_qrd5() || machine_is_msm7x27a_qrd5a())
 		kp_matrix_info_8625.keymap = keymap_8625_qrd5;
-
+#endif
 	if (MACHINE_IS_JSR_I6)
 		platform_device_register(&kp_pdev_8625);
 /*

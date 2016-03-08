@@ -341,3 +341,10 @@ config OV7695_RAW
 	default n
 	---help---
 	  Omni Vision BAYER Sensor for QRD Devices
+config OV5647_TRULY_CM8312
+ 	bool "Sensor ov5647_truly_cm8312 (Omnivision 8M)"
+ 	depends on MSM_CAMERA
+ 	---help---
+ 	  Support for OV5647_TRULY_CM8312 sensor driver.
+          It is a Bayer 8MP sensor with auto focus and it supports
+ 	  two mipi lanes, required for msm8625 platform.
