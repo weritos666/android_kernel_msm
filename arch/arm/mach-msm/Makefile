@@ -40,6 +40,13 @@ endif
 obj-$(CONFIG_MSM_VIC) += irq-vic.o
 obj-$(CONFIG_MSM_EVENT_TIMER)		+= event_timer.o
 obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
+obj-$(CONFIG_INTELLI_PLUG)	+= intelli_plug.o
+obj-$(CONFIG_BRICKED_HOTPLUG) += bricked_hotplug.o
+obj-$(CONFIG_MSM_HOTPLUG) += msm_hotplug.o
+obj-$(CONFIG_MAKO_HOTPLUG) += mako_hotplug.o
+obj-$(CONFIG_ZEN_DECISION) += msm_zen_decision.o
+obj-$(CONFIG_MSM_SLEEPER) += msm_sleeper.o
+obj-$(CONFIG_ASMP)		+= autosmp.o
 
 ifdef CONFIG_ARCH_QSD8X50
 	obj-$(CONFIG_MSM_SOC_REV_NONE) += acpuclock-8x50.o

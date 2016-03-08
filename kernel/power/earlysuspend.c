@@ -33,7 +33,7 @@ enum {
 	DEBUG_SUSPEND = 1U << 2,
 	DEBUG_VERBOSE = 1U << 3,
 };
-static int debug_mask = DEBUG_USER_STATE;
+static int debug_mask = DEBUG_USER_STATE | DEBUG_SUSPEND | DEBUG_VERBOSE;
 module_param_named(debug_mask, debug_mask, int, S_IRUGO | S_IWUSR | S_IWGRP);
 
 static DEFINE_MUTEX(early_suspend_lock);
@@ -76,11 +76,32 @@ void unregister_early_suspend(struct early_suspend *handler)
 }
 EXPORT_SYMBOL(unregister_early_suspend);
 
+/* yangjq, 20121127, Add to show consumed time, START */
+static void dpm_show_time(ktime_t starttime, char *info)
+{
+	ktime_t calltime;
+	u64 usecs64;
+	int usecs;
+
+	calltime = ktime_get();
+	usecs64 = ktime_to_ns(ktime_sub(calltime, starttime));
+	do_div(usecs64, NSEC_PER_USEC);
+	usecs = usecs64;
+	if (usecs == 0)
+		usecs = 1;
+	pr_info("PM: %s of devices complete after %ld.%03ld msecs\n",
+		info ?: "", 
+		usecs / USEC_PER_MSEC, usecs % USEC_PER_MSEC);
+}
+/* yangjq, 20121127, Add to show consumed time, END */
+
 static void early_suspend(struct work_struct *work)
 {
 	struct early_suspend *pos;
 	unsigned long irqflags;
 	int abort = 0;
+	/* yangjq, 20121127, Add to show consumed time */
+	ktime_t starttime = ktime_get();
 
 	mutex_lock(&early_suspend_lock);
 #ifdef CONFIG_MSM_SM_EVENT
@@ -90,7 +111,10 @@ static void early_suspend(struct work_struct *work)
 #endif
 	spin_lock_irqsave(&state_lock, irqflags);
 	if (state == SUSPEND_REQUESTED)
+	{
+		pr_info("%s: state %d\n",__func__, state);
 		state |= SUSPENDED;
+	}
 	else
 		abort = 1;
 	spin_unlock_irqrestore(&state_lock, irqflags);
@@ -123,6 +147,9 @@ abort:
 	if (state == SUSPEND_REQUESTED_AND_SUSPENDED)
 		wake_unlock(&main_wake_lock);
 	spin_unlock_irqrestore(&state_lock, irqflags);
+
+	/* yangjq, 20121127, Add to show consumed time */
+	dpm_show_time(starttime, "early suspend");
 }
 
 static void late_resume(struct work_struct *work)
@@ -130,6 +157,8 @@ static void late_resume(struct work_struct *work)
 	struct early_suspend *pos;
 	unsigned long irqflags;
 	int abort = 0;
+	/* yangjq, 20121127, Add to show consumed time */
+	ktime_t starttime = ktime_get();
 
 	mutex_lock(&early_suspend_lock);
 #ifdef CONFIG_MSM_SM_EVENT
@@ -138,7 +167,10 @@ static void late_resume(struct work_struct *work)
 #endif
 	spin_lock_irqsave(&state_lock, irqflags);
 	if (state == SUSPENDED)
+	{
+		pr_info("%s: state %d\n",__func__, state);
 		state &= ~SUSPENDED;
+	}
 	else
 		abort = 1;
 	spin_unlock_irqrestore(&state_lock, irqflags);
@@ -166,8 +198,13 @@ abort:
 	sm_add_event(SM_POWER_EVENT | SM_POWER_EVENT_LATE_RESUME, SM_EVENT_END, 0, NULL, 0);
 #endif
 	mutex_unlock(&early_suspend_lock);
+
+	/* yangjq, 20121127, Add to show consumed time */
+	dpm_show_time(starttime, "late resume");
 }
 
+/* yangjq, 20121127, Add to show consumed time */
+ktime_t power_key_starttime;
 void request_suspend_state(suspend_state_t new_state)
 {
 	unsigned long irqflags;
@@ -191,13 +228,22 @@ void request_suspend_state(suspend_state_t new_state)
 	}
 	if (!old_sleep && new_state != PM_SUSPEND_ON) {
 		state |= SUSPEND_REQUESTED;
+		pr_info("%s: goto late resume.state %d\n",__func__, state);
 		queue_work(suspend_work_queue, &early_suspend_work);
+		/* yangjq, 20121127, Add to show consumed time */
+		power_key_starttime.tv64 = 0;
 	} else if (old_sleep && new_state == PM_SUSPEND_ON) {
 		state &= ~SUSPEND_REQUESTED;
+		pr_info("%s: goto late resume.state %d\n",__func__, state);
 		wake_lock(&main_wake_lock);
 		queue_work(suspend_work_queue, &late_resume_work);
+		/* yangjq, 20121127, Add to show consumed time, START */
+		if (power_key_starttime.tv64 != 0)
+			dpm_show_time(power_key_starttime, "power key");
+		/* yangjq, 20121127, Add to show consumed time, END */
 	}
 	requested_suspend_state = new_state;
+	pr_info("%s: end of function. new_state %d, old_state %d, requested_suspend_state %d\n",__func__, new_state, old_sleep, requested_suspend_state);
 	spin_unlock_irqrestore(&state_lock, irqflags);
 	mutex_unlock(&early_suspend_lock);
 }

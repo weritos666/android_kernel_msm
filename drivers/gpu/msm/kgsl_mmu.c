@@ -579,8 +579,7 @@ struct kgsl_pagetable *kgsl_mmu_getpagetable(unsigned long name)
 		return (void *)(-1);
 
 	if (!kgsl_mmu_is_perprocess())
-        
-	name = KGSL_MMU_GLOBAL_PT;
+ 	name = KGSL_MMU_GLOBAL_PT;
 
 	pt = kgsl_get_pagetable(name);
 
